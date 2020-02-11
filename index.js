@@ -1,2 +1,2 @@
-import { removeBackground } from './AIFetch';
-export default removeBackground;
+import { removeBulkBackground } from './src/index';
+export default removeBulkBackground;
