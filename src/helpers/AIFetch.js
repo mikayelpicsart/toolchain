@@ -1,7 +1,6 @@
 
 import cryptoJs from 'crypto-js';
 import uuid from 'uuid/v1';
-import 'formdata-polyfill';
 
 const TOKEN = process.env.AI_TOKEN || '';
 const AI_API_BASE_URL = process.env.AI_API_BASE_URL || '';
@@ -34,17 +33,15 @@ function fetchWithTimeout(url, options) {
 async function AiFetch(url, options) {
     try {
         const response = await fetchWithTimeout(`${AI_API_BASE_URL}/${url}`, options);
-        if(!response.ok) throw new Error(`response status is ${response.status}`);
+        if (!response.ok) throw new Error(`response status is ${response.status}`);
         return response;
     } catch (error) {
         throw error;
     }
 }
 
-export async function removeBackground(imageSrc) {
-    console.log(imageSrc);
+export async function removeBackground(file) {
     const formData = new FormData();
-    const file = await getFileFromUrl(imageSrc);
     formData.append('image', file);
     const [token, sid] = genToken();
     const options = {
@@ -56,9 +53,3 @@ export async function removeBackground(imageSrc) {
     return await response.json();
 }
 
-async function getFileFromUrl(imageSrc) {
-    if(imageSrc instanceof File) return imageSrc;
-    const response = await fetch(imageSrc);
-    const blob = await response.blob();
-    return new File([blob], 'image.jpeg');
-}

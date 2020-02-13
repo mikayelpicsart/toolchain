@@ -1,17 +1,7 @@
 import { removeBackground } from '../helpers/AIFetch';
+import { getFileFromUrl } from '../helpers';
 
-// const cc = new OffscreenCanvas(100, 1);
-// console.log(cc);
-
-self.addEventListener('message', function (e) {
-    const { cmd, payload } = JSON.parse(e.data); 
-    console.log(cmd, payload);
-    switch (cmd) {
-        case 'REMOVE_BULK_BACKGROUND':
-            removeBackground(payload).then(data=> self.postMessage(data));
-            break;
-        default:
-            break;
-    }
-    
-}, false);
+export async function removeBackgroundBulk (array = []) {
+    const fileArray = await Promise.all(array.map(item => getFileFromUrl(item, true)));
+    Promise.all(fileArray.map(file => removeBackground(file))).then(data=> console.log(data));
+}
