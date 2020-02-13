@@ -1,19 +1,19 @@
 
 import cryptoJs from 'crypto-js';
-import uuid from 'uuid/v1';
+import uuidV1 from 'uuid/v1';
 
 const TOKEN = process.env.AI_TOKEN || '';
 const AI_API_BASE_URL = process.env.AI_API_BASE_URL || '';
 const AI_TOKEN_SECRET_KEY = process.env.AI_TOKEN_SECRET_KEY || '';
 
-function genToken(sid = uuid()) {
+export function genToken(sid = uuidV1()) {
     const decoded = cryptoJs.AES.decrypt(TOKEN, AI_TOKEN_SECRET_KEY).toString(cryptoJs.enc.Utf8);
     const plaintext = decoded.replace(/r/ig, '');
     const auth = cryptoJs.SHA256(sid + plaintext);
     return [auth, sid];
 }
 
-function fetchWithTimeout(url, options) {
+export function fetchWithTimeout(url, options) {
     const { timeout = 15000, ...rest } = options;
     const controller = new AbortController();
     const { signal } = controller;
@@ -30,7 +30,7 @@ function fetchWithTimeout(url, options) {
     });
 };
 
-async function AiFetch(url, options) {
+export async function AiFetch(url, options) {
     try {
         const response = await fetchWithTimeout(`${AI_API_BASE_URL}/${url}`, options);
         if (!response.ok) throw new Error(`response status is ${response.status}`);
@@ -40,16 +40,4 @@ async function AiFetch(url, options) {
     }
 }
 
-export async function removeBackground(file) {
-    const formData = new FormData();
-    formData.append('image', file);
-    const [token, sid] = genToken();
-    const options = {
-        body: formData,
-        method: 'POST',
-        headers: { sid, Authorization: `Bearer ${token}` },
-    }
-    const response = await AiFetch(`matting/${sid}`, { ...options });
-    return await response.json();
-}
 

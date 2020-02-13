@@ -1,3 +1,3 @@
-import { removeBackgroundBulk } from "./workers/bulk";
+import { removeBackgroundBulk } from "./effects/removeBackground";
 
 export default removeBackgroundBulk;
