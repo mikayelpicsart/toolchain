@@ -1,4 +1,4 @@
-import RemoveBackgroundWorker from 'web-worker:./worker/build/removeBackground-iife';
+import RemoveBackgroundWorker from 'web-worker:./workers/build/removeBackground-iife';
 
 const removeBackgroundWorker = new RemoveBackgroundWorker();
 

@@ -1,0 +1,14 @@
+{
+    "C_Cpp.default.cppStandard": "c++11",
+    "C_Cpp.default.includePath": [
+        "/Users/ma/project1/eeccbuildopencv-4.1.1/install/include/opencv4",
+        "/Users/ma/Projects/emsdk/fastcomp/emscripten/system/include",
+        "${default}"
+    ],
+    "cSpell.words": [
+        "EMSCRIPTEN"
+    ],
+    "files.associations": {
+        "ostream": "cpp"
+    }
+}

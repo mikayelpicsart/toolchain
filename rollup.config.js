@@ -9,10 +9,8 @@ import pkg from './package.json';
 
 require('dotenv').config();
 
-const env = process.env.NODE_ENV
-
 const configWorkers = {
-    input: 'src/workers/removeBackground/index.js',
+    input: 'src/workers/index.js',
     output: {
         file: `src/workers/build/removeBackground-iife.js`,
         format: 'iife'
@@ -26,7 +24,7 @@ const configWorkers = {
             }
         }),
         commonjs({
-            include: ["./src/workers/build/bulk-iife.js", "node_modules/**"]
+            include: ["node_modules/**"]
         }),
         babel({ exclude: 'node_modules/**', runtimeHelpers: true }),
         replace({

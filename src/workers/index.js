@@ -1,5 +1,5 @@
 
-import removeBackground from './removeBackground';
+import { removeBackground } from './removeBackground';
 
 self.onmessage = function (e) {
     console.log(e.data);

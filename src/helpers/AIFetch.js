@@ -13,7 +13,7 @@ export function genToken(sid = uuidV1()) {
     return [auth, sid];
 }
 
-export function fetchWithTimeout(url, options) {
+export function fetchWithTimeout(url, options = {}) {
     const { timeout = 30000, ...rest } = options;
     const controller = new AbortController();
     const { signal } = controller;
