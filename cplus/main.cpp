@@ -18,7 +18,14 @@ extern "C"
     //     cout << "end resize_image" << endl;
     //     return 0;
     // }
-    int EMSCRIPTEN_KEEPALIVE test()
+    
+    EMSCRIPTEN_KEEPALIVE void print_tests()
+    {
+        EM_ASM(console.log('Hello from JS'););
+        printf("printf from print_tests\n");
+        std::cout << "cout from print_tests!" << std::endl;
+    }
+    EMSCRIPTEN_KEEPALIVE int test()
     {
         std::cout << "start test" << 'i' << 8 << std::endl;
         return 0;
