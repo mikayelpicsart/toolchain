@@ -2,11 +2,23 @@ import { genToken, AiFetch, fetchWithTimeout } from '../../helpers/AIFetch';
 import wasmModule from '../../helpers/image';
 import 'formdata-polyfill';
 
-async function getUintArraysFromSrc(src) {
-    const response = await fetchWithTimeout(src);
-    const arrayBuffer = await response.arrayBuffer();
-    return new Uint8Array(arrayBuffer);
+const defer = {};
+defer.promise = new Promise((resolve, reject) => {
+    defer.resolve = resolve;
+    defer.reject = reject;
+});
+
+wasmModule.onRuntimeInitialized = function () {
+    defer.resolve && defer.resolve();
 }
+
+export async function removeBackground(imagesSrc) {
+    const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArraysFromSrc(src)));
+    await defer.promise; // await to onRuntimeInitialized
+    wasmModule._test();
+    //wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+}
+
 // async function removeBackground(file) {
 //     const formData = new FormData();
 //     formData.append('image', file);
@@ -63,6 +75,16 @@ async function getUintArraysFromSrc(src) {
 //     lastPromise.then(data => { callback(data, true) });
 // }
 
+
+
+
+
+async function getUintArraysFromSrc(src) {
+    const response = await fetchWithTimeout(src);
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+}
+
 function _freeArray(heapBytes) {
     wasmModule._free(heapBytes.byteOffset);
 
@@ -73,10 +95,4 @@ function _arrayToHeap(typedArray) {
     const heapBytes = wasmModule.HEAPU8.subarray(ptr, ptr + numBytes);
     heapBytes.set(typedArray);
     return heapBytes;
-}
-
-export async function  removeBackground(imagesSrc) {
-    const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArraysFromSrc(src)));
-    wasmModule._test();
-    //wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length);
 }

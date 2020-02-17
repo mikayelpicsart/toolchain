@@ -20,7 +20,7 @@ extern "C"
     // }
     int EMSCRIPTEN_KEEPALIVE test()
     {
-        std::cout << "start test" << std::endl;
+        std::cout << "start test" << 'i' << 8 << std::endl;
         return 0;
     }
 }
