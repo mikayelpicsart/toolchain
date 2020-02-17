@@ -1,7 +1,6 @@
-import { genToken, AiFetch } from '../helpers/AIFetch';
-import { loadImage, resizeIfNeededImage, upScaleImage } from '../helpers';
+import { genToken, AiFetch } from '../../helpers/AIFetch';
 
-export async function removeBackground(file) {
+async function removeBackground(file) {
     const formData = new FormData();
     formData.append('image', file);
     const [token, sid] = genToken();
@@ -14,7 +13,7 @@ export async function removeBackground(file) {
     return await response.json();
 }
 
-export async function createPngFromMask (maskUrl, originalIMage) {
+async function createPngFromMask (maskUrl, originalIMage) {
     const mask = await loadImage(maskUrl);
     const maskImage = await upScaleImage(mask, originalIMage.width, originalIMage.height);
     const canvas = document.createElement('canvas');
@@ -41,7 +40,7 @@ async function removeBackgroundMulti(srcArray = []) {
     return imageDataUrlArray;
 }
 
-export async function removeBackgroundBulk (srcArray = [], callback) {
+async function removeBackgroundBulk (srcArray = [], callback) {
     const arrayOfArray = [];
     while(srcArray.length !== 0) {
         arrayOfArray.push(srcArray.splice(0, 10));
