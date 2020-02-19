@@ -28,31 +28,30 @@ export async function createPngFromMask (maskUrl, originalIMage) {
     return canvas.toDataURL();
 }
 
-async function removeBackgroundMulti(srcArray = []) {
-    const imagesArray = await Promise.all(srcArray.map(src => loadImage(src))); // original
-    const resizedImagesArray = await Promise.all(imagesArray.map(image => resizeIfNeededImage(image, 512)));
-    const maskArray = await Promise.all(resizedImagesArray.map(blob => removeBackground(new File([blob], 'image.jpeg'))));
-    const imageDataUrlArray = await Promise.all(imagesArray
-        .map((image, index) => {
-            const { data: { url: maskUrl } } = maskArray[index];
-            return createPngFromMask(maskUrl, image)
-        })
-    )
-    return imageDataUrlArray;
+async function removeBackgroundInDepend(src) {
+    const image = await loadImage(src);
+    const blob = await resizeIfNeededImage(image, 1024);   
+    const { data: { url: maskUrl } } = await removeBackground(new File([blob], 'image.jpeg'));
+    return await createPngFromMask(maskUrl, image);
 }
 
+// async function removeBackgroundMulti(srcArray = []) {
+//     const imagesArray = await Promise.all(srcArray.map(src => loadImage(src))); // original
+//     const resizedImagesArray = await Promise.all(imagesArray.map(image => resizeIfNeededImage(image, 512)));
+//     const maskArray = await Promise.all(resizedImagesArray.map(blob => removeBackground(new File([blob], 'image.jpeg'))));
+//     const imageDataUrlArray = await Promise.all(imagesArray
+//         .map((image, index) => {
+//             const { data: { url: maskUrl } } = maskArray[index];
+//             return createPngFromMask(maskUrl, image)
+//         })
+//     )
+//     return imageDataUrlArray;
+// }
+
 export async function removeBackgroundBulk (srcArray = [], callback) {
-    const arrayOfArray = [];
-    while(srcArray.length !== 0) {
-        arrayOfArray.push(srcArray.splice(0, 10));
-    }
-    console.log(arrayOfArray);
-    var lastPromise = null
-    for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
-        lastPromise = p = p.then(data => {
-            i && callback(data, false);
-            return removeBackgroundMulti(arrayOfArray[i]);
-        });
-    }
-    lastPromise.then(data => { callback(data, true) });
+    Promise.all(srcArray.map(src => {
+        return removeBackgroundInDepend(src).then(imageSrcBase64 => {
+            callback(imageSrcBase64, false);
+        })
+    })).then(_ => callback(null, true));
 }
