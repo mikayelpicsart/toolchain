@@ -15,8 +15,8 @@ wasmModule.onRuntimeInitialized = function () {
 export async function removeBackground(imagesSrc) {
     const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArraysFromSrc(src)));
     await defer.promise; // await to onRuntimeInitialized
-    wasmModule._test();
-    //wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+    //wasmModule._print_tests();
+    console.log(wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length));
 }
 
 // async function removeBackground(file) {

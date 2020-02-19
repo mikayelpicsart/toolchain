@@ -9,7 +9,7 @@ export async function loadImage(imageSrc) {
     });
 }
 
-export async function resizeIfNeededImage(image, maxSize) {
+export async function resizeIfNeededImage(image, maxSize = 512) {
     let ratio = Math.min(maxSize / image.width, maxSize / image.height);
     ratio = ratio >= 1 ? 1 : ratio;
     const canvas = document.createElement('canvas');
@@ -17,9 +17,7 @@ export async function resizeIfNeededImage(image, maxSize) {
     canvas.height = image.height * ratio
     const ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * ratio, image.height * ratio);
-    return await new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => resolve(blob))
-    });
+    return ctx.getImageData();
 }
 
 export async function upScaleImage(image, width, height) {
