@@ -24,8 +24,9 @@ export async function createPngFromMask (maskUrl, originalIMage) {
     ctx.drawImage(originalIMage, 0, 0);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskImage, 0, 0);
-    document.body.append(canvas);
-    return canvas.toDataURL();
+    return await new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg');
+    });
 }
 
 async function removeBackgroundMulti(srcArray = []) {
@@ -54,5 +55,5 @@ export async function removeBackgroundBulk (srcArray = [], callback) {
             return removeBackgroundMulti(arrayOfArray[i]);
         });
     }
-    lastPromise.then(data => { callback(data, true) });
+    lastPromise.then(data => { callback(data, false); callback(null, true) });
 }
