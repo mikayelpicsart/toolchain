@@ -3,6 +3,7 @@
     "C_Cpp.default.includePath": [
         "/Users/ma/project1/buildwithcodecs/install/include/opencv4",
         "/Users/ma/Projects/emsdk/fastcomp/emscripten/system/include",
+        "/Users/ma/buldlib/libjpeg-turbo",
         "${default}"
     ],
     "cSpell.words": [

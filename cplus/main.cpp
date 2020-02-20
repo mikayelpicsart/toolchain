@@ -1,20 +1,15 @@
-#include <opencv2/imgproc.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
 #include <emscripten.h>
 #include <iostream>
+#include "include/myjpeglib.h"
 
 using namespace std;
-using namespace cv;
 
 extern "C"
 {
-    int EMSCRIPTEN_KEEPALIVE resize_image(uint8_t* buffer, size_t nSize )
+    int EMSCRIPTEN_KEEPALIVE resize_image(uint8_t *buffer, size_t nSize)
     {
-        Mat raw_data = cv::Mat(1, nSize, CV_8UC1, buffer);
-        Mat test = imdecode(raw_data, cv::IMREAD_UNCHANGED);
-        cout << test << endl;
-        return 1;
+        Image* img = readJpeg(buffer, nSize);
+        return 0;
     }
     int EMSCRIPTEN_KEEPALIVE print_tests()
     {
