@@ -10,3 +10,4 @@ typedef struct Image
 } Image;
 
 extern Image *readJpeg(BYTE *jpegData, ULONG dataSize);
+extern Image *writeJpeg(BYTE *bmp, ULONG width, ULONG height, ULONG quality);

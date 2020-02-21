@@ -3,12 +3,39 @@
 #include "include/myjpeglib.h"
 
 using namespace std;
+unsigned char * resize(int new_width, int new_height, char* data, int width, int height)
+{
+    // Get a new buffer to interpolate into
+    unsigned char* new_data = new unsigned char[new_width * new_height * 3];
+
+    double scaleWidth = (double)new_width / (double)width;
+    double scaleHeight = (double)new_height / (double)height;
+
+    for (int cy = 0; cy < new_height; cy++)
+    {
+        for (int cx = 0; cx < new_width; cx++)
+        {
+            int pixel = (cy * (new_width * 3)) + (cx * 3);
+            int nearestMatch = (((int)(cy / scaleHeight) * (width * 3)) + ((int)(cx / scaleWidth) * 3));
+            new_data[pixel] = data[nearestMatch];
+            new_data[pixel + 1] = data[nearestMatch + 1];
+            new_data[pixel + 2] = data[nearestMatch + 2];
+        }
+    }
+    return new_data;
+}
 
 extern "C"
 {
     int EMSCRIPTEN_KEEPALIVE resize_image(uint8_t *buffer, size_t nSize)
     {
-        Image* img = readJpeg(buffer, nSize);
+        Image *img = readJpeg(buffer, nSize);
+        emscripten_log(EM_LOG_NO_PATHS | EM_LOG_CONSOLE, "%d, %d, %d", img->height, img->width, img->compressedSize);
+        for (int i = 0; i < img->width; ++i)
+        {
+            emscripten_log(EM_LOG_NO_PATHS | EM_LOG_CONSOLE, "%d %d %d", img->data[i * 3], img->data[i * 3 + 1], img->data[i * 3 + 2]);
+        }
+
         return 0;
     }
     int EMSCRIPTEN_KEEPALIVE print_tests()
