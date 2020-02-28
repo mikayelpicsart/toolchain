@@ -24,9 +24,7 @@ export async function createPngFromMask (maskUrl, originalIMage) {
     ctx.drawImage(originalIMage, 0, 0);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskImage, 0, 0);
-    return await new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => resolve(blob), 'image/jpeg');
-    });
+    return canvas;
 }
 
 async function removeBackgroundMulti(srcArray = []) {
