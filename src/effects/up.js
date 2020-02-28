@@ -1,6 +1,5 @@
-import { genToken, AiFetch } from '../helpers/AIFetch';
-import { loadImage, resizeIfNeededImage, upScaleImage } from '../helpers';
-
+import { loadImage } from '../helpers';
+import { useRunOut } from 'editor-lib';
 export async function removeBackground(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -14,7 +13,7 @@ export async function removeBackground(file) {
     return await response.json();
 }
 
-export async function createPngFromMask (maskUrl, originalIMage) {
+export async function applyRunOut (imgUrl) {
     const mask = await loadImage(maskUrl);
     const maskImage = await upScaleImage(mask, originalIMage.width, originalIMage.height);
     const canvas = document.createElement('canvas');
@@ -27,8 +26,9 @@ export async function createPngFromMask (maskUrl, originalIMage) {
     return canvas;
 }
 
-async function removeBackgroundMulti(srcArray = []) {
+async function applyRunOutMulti(srcArray = []) {
     const imagesArray = await Promise.all(srcArray.map(src => loadImage(src))); // original
+
     const resizedImagesArray = await Promise.all(imagesArray.map(image => resizeIfNeededImage(image, 512)));
     const maskArray = await Promise.all(resizedImagesArray.map(blob => removeBackground(new File([blob], 'image.jpeg'))));
     const imageDataUrlArray = await Promise.all(imagesArray
@@ -40,7 +40,7 @@ async function removeBackgroundMulti(srcArray = []) {
     return imageDataUrlArray;
 }
 
-export async function removeBackgroundBulk (srcArray = [], callback) {
+export async function runOut (srcArray = [],  ) {
     const arrayOfArray = [];
     while(srcArray.length !== 0) {
         arrayOfArray.push(srcArray.splice(0, 10));
@@ -49,7 +49,7 @@ export async function removeBackgroundBulk (srcArray = [], callback) {
     for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
         lastPromise = p = p.then(data => {
             i && callback(data, false);
-            return removeBackgroundMulti(arrayOfArray[i]);
+            return applyRunOutMulti(arrayOfArray[i]);
         });
     }
     lastPromise.then(data => { callback(data, false); callback(null, true) });

@@ -1,3 +1,5 @@
-import { removeBackgroundBulk } from "./effects/removeBackground";
+import { removeBackgroundBulk as removebackgroundBulk } from "./effects/removeBackground";
+import { runOut as runout } from "./effects/runOut";
 
-export default removeBackgroundBulk;
+export const removeBackgroundBulk = removebackgroundBulk;
+export const runOut = runout;
