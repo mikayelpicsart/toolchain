@@ -1,5 +1,4 @@
 /node_modules
-/dist
 /src/workers/build/*
 /cplus/build/*
 /src/helpers/image.js
