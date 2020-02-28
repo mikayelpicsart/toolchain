@@ -10,8 +10,7 @@ export async function loadImage(imageSrc) {
 }
 
 export async function resizeIfNeededImage(image, maxSize = 512) {
-    let ratio = Math.min(maxSize / image.width, maxSize / image.height);
-    ratio = ratio >= 1 ? 1 : ratio;
+    let ratio = Math.min(maxSize / image.width, maxSize / image.height, 1);
     const canvas = document.createElement('canvas');
     canvas.width = image.width * ratio;
     canvas.height = image.height * ratio

@@ -10,5 +10,7 @@ export function removeBackgroundBulk(imagesSrc) {
 }
 
 removeBackgroundWorker.onmessage = function (e) {
-    //console.log(e, e.data);
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(e.data);
+    document.body.appendChild(img);
 }

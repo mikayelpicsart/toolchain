@@ -20,7 +20,7 @@ static void my_error_exit(j_common_ptr cinfo)
     longjmp(myerr->setjmp_buffer, 1);
 }
 
-Image * readJpeg(BYTE *jpegData, ULONG dataSize)
+Image *readJpeg(BYTE *jpegData, ULONG dataSize)
 {
     struct jpeg_decompress_struct cinfo;
     struct my_error_mgr jerr;
@@ -56,4 +56,52 @@ Image * readJpeg(BYTE *jpegData, ULONG dataSize)
     (void)jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
     return pImage;
+}
+
+BYTE *writeJpeg(BYTE *bmp, ULONG width, ULONG height, ULONG quality)
+{
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    JSAMPROW row_pointer[1];
+    int row_stride;
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = 3;
+    cinfo.in_color_space = JCS_RGB;
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE);
+    ULONG bufferSize = 0;
+    BYTE *buffer = NULL;
+    jpeg_mem_dest(&cinfo, &buffer, &bufferSize);
+    jpeg_start_compress(&cinfo, TRUE);
+    row_stride = width * 3;
+    while (cinfo.next_scanline < cinfo.image_height)
+    {
+        row_pointer[0] = &bmp[cinfo.next_scanline * row_stride];
+        (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
+    jpeg_finish_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
+
+    // Image *pImage = (Image *)malloc(sizeof(Image));
+    // pImage->width = width;
+    // pImage->height = height;
+    // pImage->compressedSize = bufferSize;
+    // pImage->data = (BYTE *)malloc(bufferSize);
+    // memcpy(pImage->data, buffer, bufferSize);
+    // free(buffer);
+
+    BYTE *dst = (BYTE *)calloc(bufferSize + sizeof(int), sizeof(BYTE));
+    // ULONG *infos = (ULONG *)dst;
+    // infos[0] = width;
+    // infos[1] = width;
+    // infos[2] = bufferSize;
+    memcpy(&dst[sizeof(int)], buffer, bufferSize);
+    unsigned char intvalue[sizeof(int)];
+    intToBytes((int) bufferSize, intvalue);
+    memcpy(dst, intvalue, sizeof(int));
+    free(buffer);
+    return dst;
 }

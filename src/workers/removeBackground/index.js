@@ -12,11 +12,23 @@ wasmModule.onRuntimeInitialized = function () {
     defer.resolve && defer.resolve();
 }
 
+function Uint8ToNumber(Uint8) {
+    let num = 0;
+    for (let index = 0; index < Uint8.length; index++) {
+        num = (num + Uint8[index]) << !!(Uint8.length - 1 - index) * 8;
+    }
+    return num;
+}
+
 export async function removeBackground(imagesSrc) {
-    const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArraysFromSrc(src)));
+    const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArrayFromSrc(src)));
     await defer.promise; // await to onRuntimeInitialized
     // wasmModule._print_tests();
-    console.log(wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length));
+    const offset = wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+    const lengthUInt8 = wasmModule.HEAPU8.subarray(offset, offset + 4);
+    const length = Uint8ToNumber(lengthUInt8);
+    const data = wasmModule.HEAPU8.subarray(offset + 4, offset + 4 + length);
+    return new Blob([data], { type: 'image/jpeg' });
 }
 
 // async function removeBackground(file) {
@@ -79,15 +91,15 @@ export async function removeBackground(imagesSrc) {
 
 
 
-async function getUintArraysFromSrc(src) {
+async function getUintArrayFromSrc(src) {
     const response = await fetchWithTimeout(src);
     const arrayBuffer = await response.arrayBuffer();
+    //console.log(JPEG.decode(arrayBuffer));
     return new Uint8Array(arrayBuffer);
 }
 
 function _freeArray(heapBytes) {
     wasmModule._free(heapBytes.byteOffset);
-
 }
 function _arrayToHeap(typedArray) {
     const numBytes = typedArray.length * typedArray.BYTES_PER_ELEMENT;

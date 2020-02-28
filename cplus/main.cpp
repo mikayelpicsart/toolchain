@@ -1,11 +1,19 @@
 #include <emscripten.h>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 #include "include/myjpeglib.h"
 
 using namespace std;
-unsigned char * resize(int new_width, int new_height, char* data, int width, int height)
+Image * resize(Image& image, int max_size = 512)
 {
+    float ratio = min((float)min((float)max_size / image.width,  (float)max_size / image.height), 1.0f);
+    int new_width = image.width * ratio;
+    int new_height = image.height * ratio;
     // Get a new buffer to interpolate into
+    int width = image.width;
+    int height = image.height;
+    unsigned char* data = image.data;
     unsigned char* new_data = new unsigned char[new_width * new_height * 3];
 
     double scaleWidth = (double)new_width / (double)width;
@@ -22,21 +30,34 @@ unsigned char * resize(int new_width, int new_height, char* data, int width, int
             new_data[pixel + 2] = data[nearestMatch + 2];
         }
     }
-    return new_data;
+    Image* temp = new Image();
+    temp->width = new_width;
+    temp->height = new_height;
+    temp->data = new_data;
+    return temp;
 }
-
+void set_int_at_first(BYTE* source, int value){
+    BYTE* temp = new BYTE(sizeof(value));
+    intToBytes(value, temp);
+    memset(source, temp, sizeof(value));
+}
 extern "C"
 {
-    int EMSCRIPTEN_KEEPALIVE resize_image(uint8_t *buffer, size_t nSize)
+    BYTE* EMSCRIPTEN_KEEPALIVE read_jpeg(uint8_t *buffer, size_t nSize)
     {
-        Image *img = readJpeg(buffer, nSize);
-        emscripten_log(EM_LOG_NO_PATHS | EM_LOG_CONSOLE, "%d, %d, %d", img->height, img->width, img->compressedSize);
-        for (int i = 0; i < img->width; ++i)
-        {
-            emscripten_log(EM_LOG_NO_PATHS | EM_LOG_CONSOLE, "%d %d %d", img->data[i * 3], img->data[i * 3 + 1], img->data[i * 3 + 2]);
-        }
-
-        return 0;
+        Image* img_original = readJpeg(buffer, nSize);
+        BYTE* data = new BYTE(img_original->compressedSize);
+        memccpy(data, img_original->data, img_original->compressedSize, 1);
+        set_int_at_first(data, img_original->height);
+        set_int_at_first(data, img_original->width);
+        return data;
+    }
+    BYTE* EMSCRIPTEN_KEEPALIVE resize_image(int width, int height,int compressedSize, BYTE *buffer)
+    {
+        Image* img_original = new Image(width,  height, compressedSize, buffer);
+        Image* img_resized = resize(*img_original);
+        BYTE* data = writeJpeg(img_resized->data, img_resized->width, img_resized->height, 95);
+        return data;
     }
     int EMSCRIPTEN_KEEPALIVE print_tests()
     {
