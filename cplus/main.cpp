@@ -5,16 +5,16 @@
 #include "include/myjpeglib.h"
 
 using namespace std;
-Image * resize(Image& image, int max_size = 512)
+Image *resize(Image &image, int max_size = 512)
 {
-    float ratio = min((float)min((float)max_size / image.width,  (float)max_size / image.height), 1.0f);
+    float ratio = min((float)min((float)max_size / image.width, (float)max_size / image.height), 1.0f);
     int new_width = image.width * ratio;
     int new_height = image.height * ratio;
     // Get a new buffer to interpolate into
     int width = image.width;
     int height = image.height;
-    unsigned char* data = image.data;
-    unsigned char* new_data = new unsigned char[new_width * new_height * 3];
+    unsigned char *data = image.data;
+    unsigned char *new_data = new unsigned char[new_width * new_height * 3];
 
     double scaleWidth = (double)new_width / (double)width;
     double scaleHeight = (double)new_height / (double)height;
@@ -30,33 +30,44 @@ Image * resize(Image& image, int max_size = 512)
             new_data[pixel + 2] = data[nearestMatch + 2];
         }
     }
-    Image* temp = new Image();
+    Image *temp = new Image();
     temp->width = new_width;
     temp->height = new_height;
     temp->data = new_data;
     return temp;
 }
-void set_int_at_first(BYTE* source, int value){
-    BYTE* temp = new BYTE(sizeof(value));
-    intToBytes(value, temp);
-    memset(source, temp, sizeof(value));
-}
 extern "C"
 {
-    BYTE* EMSCRIPTEN_KEEPALIVE read_jpeg(uint8_t *buffer, size_t nSize)
+    BYTE *EMSCRIPTEN_KEEPALIVE read_jpeg(uint8_t *buffer, size_t nSize)
     {
-        Image* img_original = readJpeg(buffer, nSize);
-        BYTE* data = new BYTE(img_original->compressedSize);
-        memccpy(data, img_original->data, img_original->compressedSize, 1);
-        set_int_at_first(data, img_original->height);
-        set_int_at_first(data, img_original->width);
+        Image *img_original = readJpeg(buffer, nSize);
+        // BYTE data[img_original->compressedSize + 8];
+        int size = img_original->height * img_original->width * 3;
+        BYTE *data = new BYTE(size + 8);
+        BYTE *height = intToBytes(img_original->height);
+        memcpy(data, height, 4);
+        BYTE *width = intToBytes(img_original->width);
+        memcpy(data + 4, width, 4);
+        memcpy(data + 8, img_original->data, size);
         return data;
     }
-    BYTE* EMSCRIPTEN_KEEPALIVE resize_image(int width, int height,int compressedSize, BYTE *buffer)
+    BYTE *EMSCRIPTEN_KEEPALIVE readPng(uint8_t *buffer, size_t nSize)
     {
-        Image* img_original = new Image(width,  height, compressedSize, buffer);
-        Image* img_resized = resize(*img_original);
-        BYTE* data = writeJpeg(img_resized->data, img_resized->width, img_resized->height, 95);
+        Image *img_original = read_png(buffer, nSize);
+        int size = img_original->height * img_original->width * 4;
+        BYTE *data = new BYTE(size + 8);
+        BYTE *height = intToBytes(img_original->height);
+        memcpy(data, height, 4);
+        BYTE *width = intToBytes(img_original->width);
+        memcpy(data + 4, width, 4);
+        memcpy(data + 8, img_original->data, size);
+        return data;
+    }
+    BYTE *EMSCRIPTEN_KEEPALIVE resize_image(int width, int height, int compressedSize, BYTE *buffer)
+    {
+        Image *img_original = new Image(width, height, compressedSize, buffer);
+        Image *img_resized = resize(*img_original);
+        BYTE *data = writeJpeg(img_resized->data, img_resized->width, img_resized->height, 95);
         return data;
     }
     int EMSCRIPTEN_KEEPALIVE print_tests()

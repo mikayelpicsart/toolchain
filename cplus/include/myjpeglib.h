@@ -26,9 +26,5 @@ typedef struct Image
 
 extern Image *readJpeg(BYTE *jpegData, ULONG dataSize);
 extern BYTE *writeJpeg(BYTE *bmp, ULONG width, ULONG height, ULONG quality);
-
-void intToBytes(int paramInt, unsigned char* out)
-{
-    for (int i = 0; i < sizeof(int); i++)
-        out[sizeof(int) - 1 - i] = (paramInt >> (i * 8));
-}
+extern Image *read_png(unsigned char *pngData, ULONG size);
+BYTE* intToBytes(int paramInt);

@@ -20,29 +20,61 @@ function Uint8ToNumber(Uint8) {
     return num;
 }
 
-export async function removeBackground(imagesSrc) {
-    const [uintArray] = await Promise.all(imagesSrc.map(src => getUintArrayFromSrc(src)));
-    await defer.promise; // await to onRuntimeInitialized
-    // wasmModule._print_tests();
-    const offset = wasmModule._resize_image(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+async function removeBackgroundRequest(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const [token, sid] = genToken();
+    const options = {
+        body: formData,
+        method: 'POST',
+        headers: { sid, Authorization: `Bearer ${token}` },
+    }
+    const response = await AiFetch(`matting/${sid}`, { ...options });
+    return await response.json();
+}
+
+function readImageFromUintArray(uintArray) {
+    //console.log(uintArray);
+    const offset = wasmModule._read_jpeg(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+    const heightUInt8 = wasmModule.HEAPU8.subarray(offset, offset + 4);
+    const height = Uint8ToNumber(heightUInt8);
+    const widthUInt8 = wasmModule.HEAPU8.subarray(offset + 4, offset + 8);
+    const width = Uint8ToNumber(widthUInt8);
+    const data = new Uint8ClampedArray(wasmModule.HEAPU8.subarray(offset + 8, offset + 8 + (height * width * 3)));
+    return { data, height, width };
+}
+function readPngFromUintArray(uintArray) {
+    //console.log(uintArray);
+    const offset = wasmModule._readPng(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+    const heightUInt8 = wasmModule.HEAPU8.subarray(offset, offset + 4);
+    const height = Uint8ToNumber(heightUInt8);
+    const widthUInt8 = wasmModule.HEAPU8.subarray(offset + 4, offset + 8);
+    const width = Uint8ToNumber(widthUInt8);
+    const data = new Uint8ClampedArray(wasmModule.HEAPU8.subarray(offset + 8, offset + 8 + (height * width * 4)));
+    return { data, height, width };
+}
+
+function resize(imageData) {
+    //console.log(uintArray);
+    const offset = wasmModule._resize_image(imageData.width, imageData.height, 0, _arrayToHeap(imageData.data).byteOffset);
     const lengthUInt8 = wasmModule.HEAPU8.subarray(offset, offset + 4);
     const length = Uint8ToNumber(lengthUInt8);
     const data = wasmModule.HEAPU8.subarray(offset + 4, offset + 4 + length);
     return new Blob([data], { type: 'image/jpeg' });
 }
 
-// async function removeBackground(file) {
-//     const formData = new FormData();
-//     formData.append('image', file);
-//     const [token, sid] = genToken();
-//     const options = {
-//         body: formData,
-//         method: 'POST',
-//         headers: { sid, Authorization: `Bearer ${token}` },
-//     }
-//     const response = await AiFetch(`matting/${sid}`, { ...options });
-//     return await response.json();
-// }
+export async function removeBackground(imagesSrc) {
+    const uintArrays = await Promise.all(imagesSrc.map(src => getUintArrayFromSrc(src)));
+    await defer.promise; // await to onRuntimeInitialized
+    const imagesData = uintArrays.map(uintArray => readImageFromUintArray(uintArray));
+    const files = imagesData.map(imageData => resize(imageData)).map(blob => new File([blob], 'image.jpeg'));
+    const maskArray = await Promise.all(files.map(file => removeBackgroundRequest(file)));
+    const masksUint8 = await Promise.all(maskArray.map(({ data: { url = '' } }) => getUintArrayFromSrc(url)));
+    const imagesDataPng = await Promise.all(masksUint8.map(maskUint8 => readPngFromUintArray(maskUint8)));
+    return imagesDataPng;
+}
+
+
 
 // async function createPngFromMask (maskUrl, originalIMage) {
 //     const mask = await loadImage(maskUrl);
