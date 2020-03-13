@@ -70,6 +70,24 @@ extern "C"
         BYTE *data = writeJpeg(img_resized->data, img_resized->width, img_resized->height, 95);
         return data;
     }
+    BYTE *EMSCRIPTEN_KEEPALIVE blend(int width, int height, BYTE *buffer, int mask_width, int mask_height,  BYTE* mask_buffer)
+    {
+        float ratioWidth = (float)width / (float)mask_width;
+        float ratioHeight = (float)height / (float)mask_height;
+        BYTE *data = new BYTE(height * width * 4);
+        for(int i = 0; i < height; ++i) {
+            for(int j = 0; j < width; ++j){
+                int position = i * width * 3 + j * 3;
+                int new_position = i * width * 4 + j * 4;
+                int mask_position = round((float)i / ratioHeight) * mask_width + round((float)j / ratioWidth);
+                data[new_position] = buffer[position];
+                data[new_position + 1] = buffer[position + 1];
+                data[new_position + 2] = buffer[position + 2];
+                data[new_position + 3] = mask_buffer[mask_position * 4 + 3];
+            }
+        }
+        return data;
+    }
     int EMSCRIPTEN_KEEPALIVE print_tests()
     {
         EM_ASM(console.log('Hello from JS'););

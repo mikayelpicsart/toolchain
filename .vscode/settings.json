@@ -85,5 +85,6 @@
         "memory_resource": "cpp",
         "cinttypes": "cpp",
         "filesystem": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

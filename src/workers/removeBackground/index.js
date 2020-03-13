@@ -35,12 +35,15 @@ async function removeBackgroundRequest(file) {
 
 function readImageFromUintArray(uintArray) {
     //console.log(uintArray);
-    const offset = wasmModule._read_jpeg(_arrayToHeap(uintArray).byteOffset, uintArray.length);
+    const ptr = _arrayToHeap(uintArray)
+    const offset = wasmModule._read_jpeg(ptr.byteOffset, uintArray.length);
     const heightUInt8 = wasmModule.HEAPU8.subarray(offset, offset + 4);
     const height = Uint8ToNumber(heightUInt8);
     const widthUInt8 = wasmModule.HEAPU8.subarray(offset + 4, offset + 8);
     const width = Uint8ToNumber(widthUInt8);
     const data = new Uint8ClampedArray(wasmModule.HEAPU8.subarray(offset + 8, offset + 8 + (height * width * 3)));
+    _freeArray(ptr);
+    //_freeArray({byteOffset: offset});
     return { data, height, width };
 }
 function readPngFromUintArray(uintArray) {
@@ -52,6 +55,14 @@ function readPngFromUintArray(uintArray) {
     const width = Uint8ToNumber(widthUInt8);
     const data = new Uint8ClampedArray(wasmModule.HEAPU8.subarray(offset + 8, offset + 8 + (height * width * 4)));
     return { data, height, width };
+}
+
+function blend(maskData, imageData) {
+    const offset = wasmModule._blend(imageData.width, imageData.height, _arrayToHeap(imageData.data).byteOffset,
+    maskData.width, maskData.height, _arrayToHeap(maskData.data).byteOffset);
+    const data = new Uint8ClampedArray(wasmModule.HEAPU8.subarray(offset, offset + (imageData.height * imageData.width * 4)));
+    console.log(data, imageData.height, imageData.width);
+    return { data, height: imageData.height, width: imageData.width };
 }
 
 function resize(imageData) {
@@ -71,7 +82,8 @@ export async function removeBackground(imagesSrc) {
     const maskArray = await Promise.all(files.map(file => removeBackgroundRequest(file)));
     const masksUint8 = await Promise.all(maskArray.map(({ data: { url = '' } }) => getUintArrayFromSrc(url)));
     const imagesDataPng = await Promise.all(masksUint8.map(maskUint8 => readPngFromUintArray(maskUint8)));
-    return imagesDataPng;
+    const imageReadyData = await Promise.all(imagesDataPng.map((maskUint8, index) => blend(maskUint8, imagesData[index])));
+    return imageReadyData;
 }
 
 
