@@ -1,6 +1,8 @@
 import { genToken, AiFetch } from '../helpers/AIFetch';
 import { loadImage, resizeIfNeededImage, upScaleImage } from '../helpers';
 
+
+
 export async function removeBackground(file) {
     const formData = new FormData();
     formData.append('image', file);
