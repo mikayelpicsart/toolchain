@@ -8169,7 +8169,8 @@
 	                        _store = tx.objectStore('DataStore');
 
 	                        _store.put(_objectSpread$1({}, data, {
-	                          status: 'done'
+	                          status: 'done',
+	                          blob: blob
 	                        }));
 
 	                        _context4.next = 11;
