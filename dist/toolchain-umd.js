@@ -8172,7 +8172,7 @@
 	                        _store.put({
 	                          blob: blob,
 	                          status: 'done'
-	                        }, id);
+	                        });
 
 	                        _context4.next = 12;
 	                        return tx.done;

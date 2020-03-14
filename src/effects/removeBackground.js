@@ -73,7 +73,7 @@ export async function removeBackgroundBulk(srcArray = [], callback) {
         const blob = await removeBackgroundInDepend(src); {
             const tx = db.transaction('DataStore', 'readwrite');
             const store = tx.objectStore('DataStore');
-            store.put({blob, status: 'done'}, id);
+            store.put({ blob, status: 'done'});
             await tx.done;
         }
         callback(id);
