@@ -1,5 +1,6 @@
 import { genToken, AiFetch } from '../helpers/AIFetch';
 import { loadImage, resizeIfNeededImage, upScaleImage } from '../helpers';
+import { openDB } from 'idb';
 
 export async function removeBackground(file) {
     const formData = new FormData();
@@ -14,7 +15,7 @@ export async function removeBackground(file) {
     return await response.json();
 }
 
-export async function createPngFromMask (maskUrl, originalIMage) {
+export async function createPngFromMask(maskUrl, originalIMage) {
     const mask = await loadImage(maskUrl);
     const maskImage = await upScaleImage(mask, originalIMage.width, originalIMage.height);
     const canvas = document.createElement('canvas');
@@ -25,12 +26,14 @@ export async function createPngFromMask (maskUrl, originalIMage) {
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskImage, 0, 0);
     document.body.append(canvas);
-    return canvas.toDataURL();
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => resolve(blob))
+    });
 }
 
 async function removeBackgroundInDepend(src) {
     const image = await loadImage(src);
-    const blob = await resizeIfNeededImage(image, 1024);   
+    const blob = await resizeIfNeededImage(image, 1024);
     const { data: { url: maskUrl } } = await removeBackground(new File([blob], 'image.jpeg'));
     return await createPngFromMask(maskUrl, image);
 }
@@ -48,10 +51,31 @@ async function removeBackgroundInDepend(src) {
 //     return imageDataUrlArray;
 // }
 
-export async function removeBackgroundBulk (srcArray = [], callback) {
-    Promise.all(srcArray.map(src => {
-        return removeBackgroundInDepend(src).then(imageSrcBase64 => {
-            callback(imageSrcBase64, false);
-        })
-    })).then(_ => callback(null, true));
+
+export async function removeBackgroundBulk(srcArray = [], callback) {
+    const db = await openDB('PicsArt Web Action', 1, {
+        upgrade(db, oldVersion, newVersion, transaction) {
+            console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
+        },
+        blocked() {
+            console.log('blocked')
+        },
+        blocking() {
+            console.log('blocking')
+        },
+        terminated() {
+            console.log('terminated')
+        },
+    });
+    const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
+    srcArray.forEach(async function (id) {
+        const { src } = await store.get(id);
+        const blob = await removeBackgroundInDepend(src); {
+            const tx = db.transaction('DataStore', 'readwrite');
+            const store = tx.objectStore('DataStore');
+            store.put(blob, id);
+            await tx.done;
+        }
+        callback(id);
+    });
 }
