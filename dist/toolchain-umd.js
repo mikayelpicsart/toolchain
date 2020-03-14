@@ -8149,7 +8149,7 @@
 	              var _ref2 = asyncToGenerator(
 	              /*#__PURE__*/
 	              regenerator.mark(function _callee4(id) {
-	                var _ref3, src, blob, tx, _store;
+	                var data, blob, tx, _store;
 
 	                return regenerator.wrap(function _callee4$(_context4) {
 	                  while (1) {
@@ -8159,28 +8159,26 @@
 	                        return store.get(id);
 
 	                      case 2:
-	                        _ref3 = _context4.sent;
-	                        src = _ref3.url;
-	                        _context4.next = 6;
-	                        return removeBackgroundInDepend(src);
+	                        data = _context4.sent;
+	                        _context4.next = 5;
+	                        return removeBackgroundInDepend(data.url);
 
-	                      case 6:
+	                      case 5:
 	                        blob = _context4.sent;
 	                        tx = db.transaction('DataStore', 'readwrite');
 	                        _store = tx.objectStore('DataStore');
 
-	                        _store.put({
-	                          blob: blob,
+	                        _store.put(_objectSpread$1({}, data, {
 	                          status: 'done'
-	                        });
+	                        }), id);
 
-	                        _context4.next = 12;
+	                        _context4.next = 11;
 	                        return tx.done;
 
-	                      case 12:
+	                      case 11:
 	                        callback(id);
 
-	                      case 13:
+	                      case 12:
 	                      case "end":
 	                        return _context4.stop();
 	                    }
