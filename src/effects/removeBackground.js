@@ -25,7 +25,7 @@ export async function createPngFromMask(maskUrl, originalIMage) {
     ctx.drawImage(originalIMage, 0, 0);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskImage, 0, 0);
-    document.body.append(canvas);
+    //document.body.append(canvas);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => resolve(blob))
     });

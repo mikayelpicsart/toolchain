@@ -8029,15 +8029,15 @@
 	            ctx = canvas.getContext('2d');
 	            ctx.drawImage(originalIMage, 0, 0);
 	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(maskImage, 0, 0);
-	            document.body.append(canvas);
+	            ctx.drawImage(maskImage, 0, 0); //document.body.append(canvas);
+
 	            return _context2.abrupt("return", new Promise(function (resolve, reject) {
 	              canvas.toBlob(function (blob) {
 	                return resolve(blob);
 	              });
 	            }));
 
-	          case 15:
+	          case 14:
 	          case "end":
 	            return _context2.stop();
 	        }
