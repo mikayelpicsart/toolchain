@@ -8169,7 +8169,10 @@
 	                        tx = db.transaction('DataStore', 'readwrite');
 	                        _store = tx.objectStore('DataStore');
 
-	                        _store.put(blob, id);
+	                        _store.put({
+	                          blob: blob,
+	                          status: 'done'
+	                        }, id);
 
 	                        _context4.next = 12;
 	                        return tx.done;
