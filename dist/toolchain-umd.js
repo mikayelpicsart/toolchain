@@ -8161,23 +8161,24 @@
 	                      case 2:
 	                        _ref3 = _context4.sent;
 	                        src = _ref3.src;
-	                        _context4.next = 6;
+	                        console.log('src :', src);
+	                        _context4.next = 7;
 	                        return removeBackgroundInDepend(src);
 
-	                      case 6:
+	                      case 7:
 	                        blob = _context4.sent;
 	                        tx = db.transaction('DataStore', 'readwrite');
 	                        _store = tx.objectStore('DataStore');
 
 	                        _store.put(blob, id);
 
-	                        _context4.next = 12;
+	                        _context4.next = 13;
 	                        return tx.done;
 
-	                      case 12:
+	                      case 13:
 	                        callback(id);
 
-	                      case 13:
+	                      case 14:
 	                      case "end":
 	                        return _context4.stop();
 	                    }
