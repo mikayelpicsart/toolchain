@@ -8170,7 +8170,7 @@
 
 	                        _store.put(_objectSpread$1({}, data, {
 	                          status: 'done'
-	                        }), id);
+	                        }), id + 100);
 
 	                        _context4.next = 11;
 	                        return tx.done;
