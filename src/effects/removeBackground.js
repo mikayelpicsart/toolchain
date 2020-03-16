@@ -48,7 +48,6 @@ export async function createPngFromMaskResize(maskUrl, originalIMage) {
         Math.max(0, (maskImage.width - resize) / 2),
         Math.max(0, (maskImage.height - resize) / 2), 
         resize, resize, 0, 0, resize, resize);
-    document.body.append(canvas);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => resolve(blob))
     });
@@ -58,7 +57,7 @@ async function removeBackgroundInDepend(src) {
     const image = await loadImage(src);
     const blob = await resizeIfNeededImage(image, 1024);
     const { data: { url: maskUrl } } = await removeBackground(new File([blob], 'image.jpeg'));
-    return await createPngFromMaskResize(maskUrl, image);
+    return [await createPngFromMask(maskUrl, image), await createPngFromMaskResize(maskUrl, image)];
 }
 
 // async function removeBackgroundMulti(srcArray = []) {
@@ -93,10 +92,10 @@ export async function removeBackgroundBulk(srcArray = [], callback) {
     const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
     srcArray.forEach(async function (id) {
         const data = await store.get(id);
-        const blob = await removeBackgroundInDepend(data.url); {
+        const [blob, blobResize] = await removeBackgroundInDepend(data.url); {
             const tx = db.transaction('DataStore', 'readwrite');
             const store = tx.objectStore('DataStore');
-            store.put({ ...data, status: 'done', blob });
+            store.put({ ...data, status: 'done', blob, blobResize });
             await tx.done;
         }
         callback(id);
