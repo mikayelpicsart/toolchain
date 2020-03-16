@@ -38,16 +38,17 @@ export async function createPngFromMaskResize(maskUrl, originalIMage) {
     canvas.width = resize;
     canvas.height = resize;
     const ctx = canvas.getContext('2d');
-
+    const size = Math.min(originalIMage.width, originalIMage.height);
     ctx.drawImage(originalIMage, 
-        Math.max(0, (originalIMage.width - resize) / 2),
-        Math.max(0, (originalIMage.height - resize) / 2), 
-        resize, resize, 0, 0, resize, resize);
+        Math.max(0, (originalIMage.width - size) / 2),
+        Math.max(0, (originalIMage.height - size) / 2), 
+        size, size, 0, 0, resize, resize);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskImage, 
-        Math.max(0, (maskImage.width - resize) / 2),
-        Math.max(0, (maskImage.height - resize) / 2), 
-        resize, resize, 0, 0, resize, resize);
+        Math.max(0, (originalIMage.width - size) / 2),
+        Math.max(0, (originalIMage.height - size) / 2), 
+        size, size, 0, 0, resize, resize);
+        document.body.append(canvas);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => resolve(blob))
     });

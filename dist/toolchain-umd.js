@@ -8055,7 +8055,7 @@
 	  _createPngFromMaskResize = asyncToGenerator(
 	  /*#__PURE__*/
 	  regenerator.mark(function _callee3(maskUrl, originalIMage) {
-	    var mask, maskImage, canvas, resize, ctx;
+	    var mask, maskImage, canvas, resize, ctx, size;
 	    return regenerator.wrap(function _callee3$(_context3) {
 	      while (1) {
 	        switch (_context3.prev = _context3.next) {
@@ -8075,16 +8075,18 @@
 	            canvas.width = resize;
 	            canvas.height = resize;
 	            ctx = canvas.getContext('2d');
-	            ctx.drawImage(originalIMage, Math.max(0, (originalIMage.width - resize) / 2), Math.max(0, (originalIMage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
+	            size = Math.min(originalIMage.width, originalIMage.height);
+	            ctx.drawImage(originalIMage, Math.max(0, (originalIMage.width - size) / 2), Math.max(0, (originalIMage.height - size) / 2), size, size, 0, 0, resize, resize);
 	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
+	            ctx.drawImage(maskImage, Math.max(0, (originalIMage.width - size) / 2), Math.max(0, (originalIMage.height - size) / 2), size, size, 0, 0, resize, resize);
+	            document.body.append(canvas);
 	            return _context3.abrupt("return", new Promise(function (resolve, reject) {
 	              canvas.toBlob(function (blob) {
 	                return resolve(blob);
 	              });
 	            }));
 
-	          case 15:
+	          case 17:
 	          case "end":
 	            return _context3.stop();
 	        }
