@@ -8030,15 +8030,15 @@
 	            ctx = canvas.getContext('2d');
 	            ctx.drawImage(originalIMage, Math.max(0, (originalIMage.width - resize) / 2), Math.max(0, (originalIMage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
 	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize); //document.body.append(canvas);
-
+	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
+	            document.body.append(canvas);
 	            return _context3.abrupt("return", new Promise(function (resolve, reject) {
 	              canvas.toBlob(function (blob) {
 	                return resolve(blob);
 	              });
 	            }));
 
-	          case 15:
+	          case 16:
 	          case "end":
 	            return _context3.stop();
 	        }
