@@ -8000,6 +8000,53 @@
 	  return _removeBackground.apply(this, arguments);
 	}
 
+	function createPngFromMask(_x2, _x3) {
+	  return _createPngFromMask.apply(this, arguments);
+	}
+
+	function _createPngFromMask() {
+	  _createPngFromMask = asyncToGenerator(
+	  /*#__PURE__*/
+	  regenerator.mark(function _callee2(maskUrl, originalIMage) {
+	    var mask, maskImage, canvas, ctx;
+	    return regenerator.wrap(function _callee2$(_context2) {
+	      while (1) {
+	        switch (_context2.prev = _context2.next) {
+	          case 0:
+	            _context2.next = 2;
+	            return loadImage(maskUrl);
+
+	          case 2:
+	            mask = _context2.sent;
+	            _context2.next = 5;
+	            return upScaleImage(mask, originalIMage.width, originalIMage.height);
+
+	          case 5:
+	            maskImage = _context2.sent;
+	            canvas = document.createElement('canvas');
+	            canvas.width = originalIMage.width;
+	            canvas.height = originalIMage.height;
+	            ctx = canvas.getContext('2d');
+	            ctx.drawImage(originalIMage, 0, 0);
+	            ctx.globalCompositeOperation = 'destination-in';
+	            ctx.drawImage(maskImage, 0, 0); //document.body.append(canvas);
+
+	            return _context2.abrupt("return", new Promise(function (resolve, reject) {
+	              canvas.toBlob(function (blob) {
+	                return resolve(blob);
+	              });
+	            }));
+
+	          case 14:
+	          case "end":
+	            return _context2.stop();
+	        }
+	      }
+	    }, _callee2);
+	  }));
+	  return _createPngFromMask.apply(this, arguments);
+	}
+
 	function createPngFromMaskResize(_x4, _x5) {
 	  return _createPngFromMaskResize.apply(this, arguments);
 	}
@@ -8030,8 +8077,7 @@
 	            ctx = canvas.getContext('2d');
 	            ctx.drawImage(originalIMage, Math.max(0, (originalIMage.width - resize) / 2), Math.max(0, (originalIMage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
 	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize); //document.body.append(canvas);
-
+	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
 	            return _context3.abrupt("return", new Promise(function (resolve, reject) {
 	              canvas.toBlob(function (blob) {
 	                return resolve(blob);
@@ -8091,12 +8137,18 @@
 	            _ref = _context4.sent;
 	            maskUrl = _ref.data.url;
 	            _context4.next = 12;
-	            return createPngFromMaskResize(maskUrl, image);
+	            return createPngFromMask(maskUrl, image);
 
 	          case 12:
-	            return _context4.abrupt("return", _context4.sent);
+	            _context4.t0 = _context4.sent;
+	            _context4.next = 15;
+	            return createPngFromMaskResize(maskUrl, image);
 
-	          case 13:
+	          case 15:
+	            _context4.t1 = _context4.sent;
+	            return _context4.abrupt("return", [_context4.t0, _context4.t1]);
+
+	          case 17:
 	          case "end":
 	            return _context4.stop();
 	        }
@@ -8150,7 +8202,7 @@
 	              var _ref2 = asyncToGenerator(
 	              /*#__PURE__*/
 	              regenerator.mark(function _callee5(id) {
-	                var data, blob, tx, _store;
+	                var data, _ref3, _ref4, blob, blobResize, tx, _store;
 
 	                return regenerator.wrap(function _callee5$(_context5) {
 	                  while (1) {
@@ -8165,22 +8217,26 @@
 	                        return removeBackgroundInDepend(data.url);
 
 	                      case 5:
-	                        blob = _context5.sent;
+	                        _ref3 = _context5.sent;
+	                        _ref4 = slicedToArray(_ref3, 2);
+	                        blob = _ref4[0];
+	                        blobResize = _ref4[1];
 	                        tx = db.transaction('DataStore', 'readwrite');
 	                        _store = tx.objectStore('DataStore');
 
 	                        _store.put(_objectSpread$1({}, data, {
 	                          status: 'done',
-	                          blob: blob
+	                          blob: blob,
+	                          blobResize: blobResize
 	                        }));
 
-	                        _context5.next = 11;
+	                        _context5.next = 14;
 	                        return tx.done;
 
-	                      case 11:
+	                      case 14:
 	                        callback(id);
 
-	                      case 12:
+	                      case 15:
 	                      case "end":
 	                        return _context5.stop();
 	                    }
