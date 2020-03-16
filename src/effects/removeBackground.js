@@ -48,7 +48,7 @@ export async function createPngFromMaskResize(maskUrl, originalIMage) {
         Math.max(0, (maskImage.width - resize) / 2),
         Math.max(0, (maskImage.height - resize) / 2), 
         resize, resize, 0, 0, resize, resize);
-    //document.body.append(canvas);
+    document.body.append(canvas);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => resolve(blob))
     });
