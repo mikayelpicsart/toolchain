@@ -8000,54 +8000,55 @@
 	  return _removeBackground.apply(this, arguments);
 	}
 
-	function createPngFromMask(_x2, _x3) {
-	  return _createPngFromMask.apply(this, arguments);
+	function createPngFromMaskResize(_x4, _x5) {
+	  return _createPngFromMaskResize.apply(this, arguments);
 	}
 
-	function _createPngFromMask() {
-	  _createPngFromMask = asyncToGenerator(
+	function _createPngFromMaskResize() {
+	  _createPngFromMaskResize = asyncToGenerator(
 	  /*#__PURE__*/
-	  regenerator.mark(function _callee2(maskUrl, originalIMage) {
-	    var mask, maskImage, canvas, ctx;
-	    return regenerator.wrap(function _callee2$(_context2) {
+	  regenerator.mark(function _callee3(maskUrl, originalIMage) {
+	    var mask, maskImage, canvas, resize, ctx;
+	    return regenerator.wrap(function _callee3$(_context3) {
 	      while (1) {
-	        switch (_context2.prev = _context2.next) {
+	        switch (_context3.prev = _context3.next) {
 	          case 0:
-	            _context2.next = 2;
+	            _context3.next = 2;
 	            return loadImage(maskUrl);
 
 	          case 2:
-	            mask = _context2.sent;
-	            _context2.next = 5;
+	            mask = _context3.sent;
+	            _context3.next = 5;
 	            return upScaleImage(mask, originalIMage.width, originalIMage.height);
 
 	          case 5:
-	            maskImage = _context2.sent;
+	            maskImage = _context3.sent;
 	            canvas = document.createElement('canvas');
-	            canvas.width = originalIMage.width;
-	            canvas.height = originalIMage.height;
+	            resize = 480;
+	            canvas.width = resize;
+	            canvas.height = resize;
 	            ctx = canvas.getContext('2d');
-	            ctx.drawImage(originalIMage, 0, 0);
+	            ctx.drawImage(originalIMage, Math.max(0, (originalIMage.width - resize) / 2), Math.max(0, (originalIMage.height - resize) / 2), resize, resize, 0, 0, resize, resize);
 	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(maskImage, 0, 0); //document.body.append(canvas);
+	            ctx.drawImage(maskImage, Math.max(0, (maskImage.width - resize) / 2), Math.max(0, (maskImage.height - resize) / 2), resize, resize, 0, 0, resize, resize); //document.body.append(canvas);
 
-	            return _context2.abrupt("return", new Promise(function (resolve, reject) {
+	            return _context3.abrupt("return", new Promise(function (resolve, reject) {
 	              canvas.toBlob(function (blob) {
 	                return resolve(blob);
 	              });
 	            }));
 
-	          case 14:
+	          case 15:
 	          case "end":
-	            return _context2.stop();
+	            return _context3.stop();
 	        }
 	      }
-	    }, _callee2);
+	    }, _callee3);
 	  }));
-	  return _createPngFromMask.apply(this, arguments);
+	  return _createPngFromMaskResize.apply(this, arguments);
 	}
 
-	function removeBackgroundInDepend(_x4) {
+	function removeBackgroundInDepend(_x6) {
 	  return _removeBackgroundInDepend.apply(this, arguments);
 	} // async function removeBackgroundMulti(srcArray = []) {
 	//     const imagesArray = await Promise.all(srcArray.map(src => loadImage(src))); // original
@@ -8066,41 +8067,41 @@
 	function _removeBackgroundInDepend() {
 	  _removeBackgroundInDepend = asyncToGenerator(
 	  /*#__PURE__*/
-	  regenerator.mark(function _callee3(src) {
+	  regenerator.mark(function _callee4(src) {
 	    var image, blob, _ref, maskUrl;
 
-	    return regenerator.wrap(function _callee3$(_context3) {
+	    return regenerator.wrap(function _callee4$(_context4) {
 	      while (1) {
-	        switch (_context3.prev = _context3.next) {
+	        switch (_context4.prev = _context4.next) {
 	          case 0:
-	            _context3.next = 2;
+	            _context4.next = 2;
 	            return loadImage(src);
 
 	          case 2:
-	            image = _context3.sent;
-	            _context3.next = 5;
+	            image = _context4.sent;
+	            _context4.next = 5;
 	            return resizeIfNeededImage(image, 1024);
 
 	          case 5:
-	            blob = _context3.sent;
-	            _context3.next = 8;
+	            blob = _context4.sent;
+	            _context4.next = 8;
 	            return removeBackground(new File([blob], 'image.jpeg'));
 
 	          case 8:
-	            _ref = _context3.sent;
+	            _ref = _context4.sent;
 	            maskUrl = _ref.data.url;
-	            _context3.next = 12;
-	            return createPngFromMask(maskUrl, image);
+	            _context4.next = 12;
+	            return createPngFromMaskResize(maskUrl, image);
 
 	          case 12:
-	            return _context3.abrupt("return", _context3.sent);
+	            return _context4.abrupt("return", _context4.sent);
 
 	          case 13:
 	          case "end":
-	            return _context3.stop();
+	            return _context4.stop();
 	        }
 	      }
-	    }, _callee3);
+	    }, _callee4);
 	  }));
 	  return _removeBackgroundInDepend.apply(this, arguments);
 	}
@@ -8112,19 +8113,19 @@
 	function _removeBackgroundBulk() {
 	  _removeBackgroundBulk = asyncToGenerator(
 	  /*#__PURE__*/
-	  regenerator.mark(function _callee5() {
+	  regenerator.mark(function _callee6() {
 	    var srcArray,
 	        callback,
 	        db,
 	        store,
-	        _args5 = arguments;
-	    return regenerator.wrap(function _callee5$(_context5) {
+	        _args6 = arguments;
+	    return regenerator.wrap(function _callee6$(_context6) {
 	      while (1) {
-	        switch (_context5.prev = _context5.next) {
+	        switch (_context6.prev = _context6.next) {
 	          case 0:
-	            srcArray = _args5.length > 0 && _args5[0] !== undefined ? _args5[0] : [];
-	            callback = _args5.length > 1 ? _args5[1] : undefined;
-	            _context5.next = 4;
+	            srcArray = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : [];
+	            callback = _args6.length > 1 ? _args6[1] : undefined;
+	            _context6.next = 4;
 	            return cjs_4('PicsArt Web Action', 1, {
 	              upgrade: function upgrade(db, oldVersion, newVersion, transaction) {
 	                console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion);
@@ -8141,30 +8142,30 @@
 	            });
 
 	          case 4:
-	            db = _context5.sent;
+	            db = _context6.sent;
 	            store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
 	            srcArray.forEach(
 	            /*#__PURE__*/
 	            function () {
 	              var _ref2 = asyncToGenerator(
 	              /*#__PURE__*/
-	              regenerator.mark(function _callee4(id) {
+	              regenerator.mark(function _callee5(id) {
 	                var data, blob, tx, _store;
 
-	                return regenerator.wrap(function _callee4$(_context4) {
+	                return regenerator.wrap(function _callee5$(_context5) {
 	                  while (1) {
-	                    switch (_context4.prev = _context4.next) {
+	                    switch (_context5.prev = _context5.next) {
 	                      case 0:
-	                        _context4.next = 2;
+	                        _context5.next = 2;
 	                        return store.get(id);
 
 	                      case 2:
-	                        data = _context4.sent;
-	                        _context4.next = 5;
+	                        data = _context5.sent;
+	                        _context5.next = 5;
 	                        return removeBackgroundInDepend(data.url);
 
 	                      case 5:
-	                        blob = _context4.sent;
+	                        blob = _context5.sent;
 	                        tx = db.transaction('DataStore', 'readwrite');
 	                        _store = tx.objectStore('DataStore');
 
@@ -8173,7 +8174,7 @@
 	                          blob: blob
 	                        }));
 
-	                        _context4.next = 11;
+	                        _context5.next = 11;
 	                        return tx.done;
 
 	                      case 11:
@@ -8181,23 +8182,23 @@
 
 	                      case 12:
 	                      case "end":
-	                        return _context4.stop();
+	                        return _context5.stop();
 	                    }
 	                  }
-	                }, _callee4);
+	                }, _callee5);
 	              }));
 
-	              return function (_x5) {
+	              return function (_x7) {
 	                return _ref2.apply(this, arguments);
 	              };
 	            }());
 
 	          case 7:
 	          case "end":
-	            return _context5.stop();
+	            return _context6.stop();
 	        }
 	      }
-	    }, _callee5);
+	    }, _callee6);
 	  }));
 	  return _removeBackgroundBulk.apply(this, arguments);
 	}

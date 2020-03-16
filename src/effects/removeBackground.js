@@ -30,12 +30,35 @@ export async function createPngFromMask(maskUrl, originalIMage) {
         canvas.toBlob((blob) => resolve(blob))
     });
 }
+export async function createPngFromMaskResize(maskUrl, originalIMage) {
+    const mask = await loadImage(maskUrl);
+    const maskImage = await upScaleImage(mask, originalIMage.width, originalIMage.height);
+    const canvas = document.createElement('canvas');
+    const resize = 480;
+    canvas.width = resize;
+    canvas.height = resize;
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(originalIMage, 
+        Math.max(0, (originalIMage.width - resize) / 2),
+        Math.max(0, (originalIMage.height - resize) / 2), 
+        resize, resize, 0, 0, resize, resize);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(maskImage, 
+        Math.max(0, (maskImage.width - resize) / 2),
+        Math.max(0, (maskImage.height - resize) / 2), 
+        resize, resize, 0, 0, resize, resize);
+    //document.body.append(canvas);
+    return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => resolve(blob))
+    });
+}
 
 async function removeBackgroundInDepend(src) {
     const image = await loadImage(src);
     const blob = await resizeIfNeededImage(image, 1024);
     const { data: { url: maskUrl } } = await removeBackground(new File([blob], 'image.jpeg'));
-    return await createPngFromMask(maskUrl, image);
+    return await createPngFromMaskResize(maskUrl, image);
 }
 
 // async function removeBackgroundMulti(srcArray = []) {
