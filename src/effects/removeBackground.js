@@ -99,6 +99,7 @@ export function removeBackgroundBulk(srcArray = [], callback) {
                 const store = tx.objectStore('DataStore');
                 store.put({ key: id, status: 'done', success: false, message: "no data by key" });
                 await tx.done;
+                return;
             }
             try {
                 const [blob, blobResize] = await removeBackgroundInDepend(data.url);
