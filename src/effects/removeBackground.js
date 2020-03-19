@@ -74,50 +74,50 @@ async function removeBackgroundInDepend(src) {
 // }
 
 
-export async function removeBackgroundBulk(srcArray = [], callback) {
+export function removeBackgroundBulk(srcArray = [], callback) {
     let notifyByCallback = true;
-    const db = await openDB('PicsArt Web Action', 1, {
-        upgrade(db, oldVersion, newVersion, transaction) {
-            console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
-        },
-        blocked() {
-            console.log('blocked')
-        },
-        blocking() {
-            console.log('blocking')
-        },
-        terminated() {
-            console.log('terminated')
-        },
-    });
-    const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
-    srcArray.forEach(async function (id) {
-        const data = await store.get(id);
-        if(!data) {
-            const tx = db.transaction('DataStore', 'readwrite');
-            const store = tx.objectStore('DataStore');
-            store.put({ key: id, status: 'done', success: false, message: "no data by key" });
-            await tx.done;
-        }
-        try {
-            const [blob, blobResize] = await removeBackgroundInDepend(data.url);
-            {
+    (async function (){
+        const db = await openDB('PicsArt Web Action', 1, {
+            upgrade(db, oldVersion, newVersion, transaction) {
+                console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
+            },
+            blocked() {
+                console.log('blocked')
+            },
+            blocking() {
+                console.log('blocking')
+            },
+            terminated() {
+                console.log('terminated')
+            },
+        });
+        const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
+        srcArray.forEach(async function (id) {
+            const data = await store.get(id);
+            if(!data) {
                 const tx = db.transaction('DataStore', 'readwrite');
                 const store = tx.objectStore('DataStore');
-                store.put({ ...data, status: 'done', blob, blobResize, success: true });
+                store.put({ key: id, status: 'done', success: false, message: "no data by key" });
                 await tx.done;
             }
-        } catch (error) {
-            const tx = db.transaction('DataStore', 'readwrite');
-            const store = tx.objectStore('DataStore');
-            store.put({ ...data, status: 'done', success: false, message: error.message });
-            await tx.done;
-        }
-        console.log('notifyByCallback', notifyByCallback, id);
-        notifyByCallback && callback(id);
-    });
+            try {
+                const [blob, blobResize] = await removeBackgroundInDepend(data.url);
+                {
+                    const tx = db.transaction('DataStore', 'readwrite');
+                    const store = tx.objectStore('DataStore');
+                    store.put({ ...data, status: 'done', blob, blobResize, success: true });
+                    await tx.done;
+                }
+            } catch (error) {
+                const tx = db.transaction('DataStore', 'readwrite');
+                const store = tx.objectStore('DataStore');
+                store.put({ ...data, status: 'done', success: false, message: error.message });
+                await tx.done;
+            }
+            notifyByCallback && callback(id);
+        });
+    })()
     return () => {
         notifyByCallback = false;
-        console.log('notifyByCallback', false);
     }
 }
