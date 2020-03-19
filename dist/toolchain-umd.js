@@ -7562,6 +7562,9 @@
 	              }, {
 	                once: true
 	              });
+	              image.addEventListener('error', function (error) {
+	                reject(error);
+	              });
 	              image.src = imageSrc;
 	            });
 
@@ -7605,9 +7608,13 @@
 	            ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * ratio, image.height * ratio);
 	            _context2.next = 10;
 	            return new Promise(function (resolve, reject) {
-	              canvas.toBlob(function (blob) {
-	                return resolve(blob);
-	              });
+	              try {
+	                canvas.toBlob(function (blob) {
+	                  return resolve(blob);
+	                });
+	              } catch (error) {
+	                reject(error);
+	              }
 	            });
 
 	          case 10:
@@ -8169,6 +8176,7 @@
 	  regenerator.mark(function _callee6() {
 	    var srcArray,
 	        callback,
+	        notifyByCallback,
 	        db,
 	        store,
 	        _args6 = arguments;
@@ -8178,7 +8186,8 @@
 	          case 0:
 	            srcArray = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : [];
 	            callback = _args6.length > 1 ? _args6[1] : undefined;
-	            _context6.next = 4;
+	            notifyByCallback = true;
+	            _context6.next = 5;
 	            return cjs_4('PicsArt Web Action', 1, {
 	              upgrade: function upgrade(db, oldVersion, newVersion, transaction) {
 	                console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion);
@@ -8194,7 +8203,7 @@
 	              }
 	            });
 
-	          case 4:
+	          case 5:
 	            db = _context6.sent;
 	            store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
 	            srcArray.forEach(
@@ -8203,7 +8212,7 @@
 	              var _ref2 = asyncToGenerator(
 	              /*#__PURE__*/
 	              regenerator.mark(function _callee5(id) {
-	                var data, _ref3, _ref4, blob, blobResize, tx, _store;
+	                var data, tx, _store, _ref3, _ref4, blob, blobResize, _tx, _store2, _tx2, _store3;
 
 	                return regenerator.wrap(function _callee5$(_context5) {
 	                  while (1) {
@@ -8214,43 +8223,87 @@
 
 	                      case 2:
 	                        data = _context5.sent;
-	                        _context5.next = 5;
+
+	                        if (data) {
+	                          _context5.next = 9;
+	                          break;
+	                        }
+
+	                        tx = db.transaction('DataStore', 'readwrite');
+	                        _store = tx.objectStore('DataStore');
+
+	                        _store.put({
+	                          key: id,
+	                          status: 'done',
+	                          success: false,
+	                          message: "no data by key"
+	                        });
+
+	                        _context5.next = 9;
+	                        return tx.done;
+
+	                      case 9:
+	                        _context5.prev = 9;
+	                        _context5.next = 12;
 	                        return removeBackgroundInDepend(data.url);
 
-	                      case 5:
+	                      case 12:
 	                        _ref3 = _context5.sent;
 	                        _ref4 = slicedToArray(_ref3, 2);
 	                        blob = _ref4[0];
 	                        blobResize = _ref4[1];
-	                        tx = db.transaction('DataStore', 'readwrite');
-	                        _store = tx.objectStore('DataStore');
+	                        _tx = db.transaction('DataStore', 'readwrite');
+	                        _store2 = _tx.objectStore('DataStore');
 
-	                        _store.put(_objectSpread$1({}, data, {
+	                        _store2.put(_objectSpread$1({}, data, {
 	                          status: 'done',
 	                          blob: blob,
-	                          blobResize: blobResize
+	                          blobResize: blobResize,
+	                          success: true
 	                        }));
 
-	                        _context5.next = 14;
-	                        return tx.done;
+	                        _context5.next = 21;
+	                        return _tx.done;
 
-	                      case 14:
-	                        callback(id);
+	                      case 21:
+	                        _context5.next = 30;
+	                        break;
 
-	                      case 15:
+	                      case 23:
+	                        _context5.prev = 23;
+	                        _context5.t0 = _context5["catch"](9);
+	                        _tx2 = db.transaction('DataStore', 'readwrite');
+	                        _store3 = _tx2.objectStore('DataStore');
+
+	                        _store3.put(_objectSpread$1({}, data, {
+	                          status: 'done',
+	                          success: false,
+	                          message: _context5.t0.message
+	                        }));
+
+	                        _context5.next = 30;
+	                        return _tx2.done;
+
+	                      case 30:
+	                        notifyByCallback && callback(id);
+
+	                      case 31:
 	                      case "end":
 	                        return _context5.stop();
 	                    }
 	                  }
-	                }, _callee5);
+	                }, _callee5, null, [[9, 23]]);
 	              }));
 
 	              return function (_x7) {
 	                return _ref2.apply(this, arguments);
 	              };
 	            }());
+	            return _context6.abrupt("return", function () {
+	              notifyByCallback = false;
+	            });
 
-	          case 7:
+	          case 9:
 	          case "end":
 	            return _context6.stop();
 	        }
