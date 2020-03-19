@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import babel from 'rollup-plugin-babel';
 import replace from '@rollup/plugin-replace';
 import glslify from 'rollup-plugin-glslify';
-// import { terser } from 'rollup-plugin-terser'
+import { terser } from 'rollup-plugin-terser'
 import pkg from './package.json';
 require('dotenv').config();
 
@@ -37,14 +37,14 @@ const configMain = {
             'process.env.AI_API_BASE_URL': JSON.stringify(process.env.AI_API_BASE_URL)
         }),
         glslify({ basedir: 'src/shaders' }),
-        // terser({
-        //     compress: {
-        //         pure_getters: true,
-        //         unsafe: true,
-        //         unsafe_comps: true,
-        //         warnings: false
-        //     }
-        // })
+        terser({
+            compress: {
+                pure_getters: true,
+                unsafe: true,
+                unsafe_comps: true,
+                warnings: false
+            }
+        })
     ]
 }
 
