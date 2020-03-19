@@ -39,14 +39,14 @@ export async function createPngFromMaskResize(maskUrl, originalIMage) {
     canvas.height = resize;
     const ctx = canvas.getContext('2d');
     const size = Math.min(originalIMage.width, originalIMage.height);
-    ctx.drawImage(originalIMage, 
+    ctx.drawImage(originalIMage,
         Math.max(0, (originalIMage.width - size) / 2),
-        Math.max(0, (originalIMage.height - size) / 2), 
+        Math.max(0, (originalIMage.height - size) / 2),
         size, size, 0, 0, resize, resize);
     ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(maskImage, 
+    ctx.drawImage(maskImage,
         Math.max(0, (originalIMage.width - size) / 2),
-        Math.max(0, (originalIMage.height - size) / 2), 
+        Math.max(0, (originalIMage.height - size) / 2),
         size, size, 0, 0, resize, resize);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => resolve(blob))
@@ -75,6 +75,7 @@ async function removeBackgroundInDepend(src) {
 
 
 export async function removeBackgroundBulk(srcArray = [], callback) {
+    let notifyByCallback = true;
     const db = await openDB('PicsArt Web Action', 1, {
         upgrade(db, oldVersion, newVersion, transaction) {
             console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
@@ -92,12 +93,29 @@ export async function removeBackgroundBulk(srcArray = [], callback) {
     const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
     srcArray.forEach(async function (id) {
         const data = await store.get(id);
-        const [blob, blobResize] = await removeBackgroundInDepend(data.url); {
+        if(!data) {
             const tx = db.transaction('DataStore', 'readwrite');
             const store = tx.objectStore('DataStore');
-            store.put({ ...data, status: 'done', blob, blobResize });
+            store.put({ key: id, status: 'done', success: false, message: "no data by key" });
             await tx.done;
         }
-        callback(id);
+        try {
+            const [blob, blobResize] = await removeBackgroundInDepend(data.url);
+            {
+                const tx = db.transaction('DataStore', 'readwrite');
+                const store = tx.objectStore('DataStore');
+                store.put({ ...data, status: 'done', blob, blobResize, success: true });
+                await tx.done;
+            }
+        } catch (error) {
+            const tx = db.transaction('DataStore', 'readwrite');
+            const store = tx.objectStore('DataStore');
+            store.put({ ...data, status: 'done', success: false, message: error.message });
+            await tx.done;
+        }
+        notifyByCallback && callback(id);
     });
+    return () => {
+        notifyByCallback = false;
+    }
 }

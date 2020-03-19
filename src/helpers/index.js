@@ -5,6 +5,9 @@ export async function loadImage(imageSrc) {
         image.addEventListener('load', () => {
             resolve(image);
         }, { once: true });
+        image.addEventListener('error', (error) => {
+            reject(error);
+        })
         image.src = imageSrc;
     });
 }
@@ -18,7 +21,12 @@ export async function resizeIfNeededImage(image, maxSize = 512) {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * ratio, image.height * ratio);
     return await new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => resolve(blob))
+        try {
+            canvas.toBlob((blob) => resolve(blob))
+        } catch (error) {
+            reject(error);
+        }
+        
     });
 }
 
