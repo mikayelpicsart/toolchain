@@ -113,9 +113,11 @@ export async function removeBackgroundBulk(srcArray = [], callback) {
             store.put({ ...data, status: 'done', success: false, message: error.message });
             await tx.done;
         }
+        console.log('notifyByCallback', notifyByCallback, id);
         notifyByCallback && callback(id);
     });
     return () => {
         notifyByCallback = false;
+        console.log('notifyByCallback', false);
     }
 }
