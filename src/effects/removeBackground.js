@@ -106,33 +106,33 @@ async function removeBackgroundBulkIndependent(srcArray, callback, db) {
 export function removeBackgroundBulk(srcArray = [], callback) {
     let notifyByCallback = true;
     function nestedCallback(id) {
-        if(notifyByCallback) callback(id);
+        if (notifyByCallback) callback(id);
     }
     const arrayOfArray = [];
     while (srcArray.length !== 0) {
         arrayOfArray.push(srcArray.splice(0, 10));
     }
-    var lastPromise = null
-        (async function () {
-            const db = await openDB('PicsArt Web Action', 1, {
-                upgrade(db, oldVersion, newVersion, transaction) {
-                    console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
-                },
-                blocked() {
-                    console.log('blocked')
-                },
-                blocking() {
-                    console.log('blocking')
-                },
-                terminated() {
-                    console.log('terminated')
-                },
-            });
-            for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
-                lastPromise = p = p.then(_ => removeBackgroundBulkIndependent(arrayOfArray[i], nestedCallback, db));
-            }
-            lastPromise.then();
-        })()
+    var lastPromise = null;
+    (async function () {
+        const db = await openDB('PicsArt Web Action', 1, {
+            upgrade(db, oldVersion, newVersion, transaction) {
+                console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
+            },
+            blocked() {
+                console.log('blocked')
+            },
+            blocking() {
+                console.log('blocking')
+            },
+            terminated() {
+                console.log('terminated')
+            },
+        });
+        for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
+            lastPromise = p = p.then(_ => removeBackgroundBulkIndependent(arrayOfArray[i], nestedCallback, db));
+        }
+        lastPromise && lastPromise.then();
+    })()
     return () => {
         notifyByCallback = false;
     }
