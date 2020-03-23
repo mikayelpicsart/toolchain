@@ -72,52 +72,67 @@ async function removeBackgroundInDepend(src) {
 //     )
 //     return imageDataUrlArray;
 // }
-
+async function removeBackgroundBulkIndependent(srcArray, callback, db) {
+    const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
+    return Promise.all(srcArray.map(async function (id) {
+        const data = await store.get(id);
+        if (!data) {
+            const tx = db.transaction('DataStore', 'readwrite');
+            const store = tx.objectStore('DataStore');
+            store.put({ key: id, status: 'done', success: false, message: "no data by key" });
+            await tx.done;
+            return;
+        }
+        try {
+            const [blob, blobResize] = await removeBackgroundInDepend(data.url);
+            {
+                const tx = db.transaction('DataStore', 'readwrite');
+                const store = tx.objectStore('DataStore');
+                store.put({ ...data, status: 'done', blob, blobResize, success: true });
+                await tx.done;
+            }
+        } catch (error) {
+            const tx = db.transaction('DataStore', 'readwrite');
+            const store = tx.objectStore('DataStore');
+            store.put({ ...data, status: 'done', success: false, message: error.message });
+            await tx.done;
+        } finally {
+            callback(id);
+        }
+        return true;
+    }));
+}
 
 export function removeBackgroundBulk(srcArray = [], callback) {
     let notifyByCallback = true;
-    (async function (){
-        const db = await openDB('PicsArt Web Action', 1, {
-            upgrade(db, oldVersion, newVersion, transaction) {
-                console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
-            },
-            blocked() {
-                console.log('blocked')
-            },
-            blocking() {
-                console.log('blocking')
-            },
-            terminated() {
-                console.log('terminated')
-            },
-        });
-        const store = db.transaction('DataStore', 'readwrite').objectStore('DataStore');
-        srcArray.forEach(async function (id) {
-            const data = await store.get(id);
-            if(!data) {
-                const tx = db.transaction('DataStore', 'readwrite');
-                const store = tx.objectStore('DataStore');
-                store.put({ key: id, status: 'done', success: false, message: "no data by key" });
-                await tx.done;
-                return;
+    function nestedCallback(id) {
+        if(notifyByCallback) callback(id);
+    }
+    const arrayOfArray = [];
+    while (srcArray.length !== 0) {
+        arrayOfArray.push(srcArray.splice(0, 10));
+    }
+    var lastPromise = null
+        (async function () {
+            const db = await openDB('PicsArt Web Action', 1, {
+                upgrade(db, oldVersion, newVersion, transaction) {
+                    console.log('upgrade oldVersion: ' + oldVersion + ' newVersion: ' + newVersion)
+                },
+                blocked() {
+                    console.log('blocked')
+                },
+                blocking() {
+                    console.log('blocking')
+                },
+                terminated() {
+                    console.log('terminated')
+                },
+            });
+            for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
+                lastPromise = p = p.then(_ => removeBackgroundMulti(arrayOfArray[i], nestedCallback, db));
             }
-            try {
-                const [blob, blobResize] = await removeBackgroundInDepend(data.url);
-                {
-                    const tx = db.transaction('DataStore', 'readwrite');
-                    const store = tx.objectStore('DataStore');
-                    store.put({ ...data, status: 'done', blob, blobResize, success: true });
-                    await tx.done;
-                }
-            } catch (error) {
-                const tx = db.transaction('DataStore', 'readwrite');
-                const store = tx.objectStore('DataStore');
-                store.put({ ...data, status: 'done', success: false, message: error.message });
-                await tx.done;
-            }
-            notifyByCallback && callback(id);
-        });
-    })()
+            lastPromise.then();
+        })()
     return () => {
         notifyByCallback = false;
     }
