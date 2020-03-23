@@ -129,7 +129,7 @@ export function removeBackgroundBulk(srcArray = [], callback) {
                 },
             });
             for (let i = 0, p = Promise.resolve(); i < arrayOfArray.length; i++) {
-                lastPromise = p = p.then(_ => removeBackgroundMulti(arrayOfArray[i], nestedCallback, db));
+                lastPromise = p = p.then(_ => removeBackgroundBulkIndependent(arrayOfArray[i], nestedCallback, db));
             }
             lastPromise.then();
         })()
