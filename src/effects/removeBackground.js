@@ -94,7 +94,7 @@ async function removeBackgroundBulkIndependent(srcArray, callback, db) {
         } catch (error) {
             const tx = db.transaction('DataStore', 'readwrite');
             const store = tx.objectStore('DataStore');
-            store.put({ ...data, status: 'done', success: false, message: error.message });
+            store.put({ ...data, status: 'error', success: false, message: error.message });
             await tx.done;
         } finally {
             callback(id);
