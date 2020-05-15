@@ -7,7 +7,7 @@ export async function loadImage(imageSrc) {
         image.addEventListener('error', (error) => {
             reject(error);
         })
-        //requestCORSIfNotSameOrigin(image, imageSrc);
+        requestCORSIfNotSameOrigin(image, imageSrc);
         image.src = imageSrc;
     });
 }
