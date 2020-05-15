@@ -1,17 +1,21 @@
 export async function loadImage(imageSrc) {
     return await new Promise((resolve, reject) => {
         const image = new Image();
-        image.setAttribute('crossOrigin', '');
         image.addEventListener('load', () => {
             resolve(image);
         }, { once: true });
         image.addEventListener('error', (error) => {
             reject(error);
         })
+        requestCORSIfNotSameOrigin(image, imageSrc);
         image.src = imageSrc;
     });
 }
-
+const requestCORSIfNotSameOrigin = (img, url) => {
+    if (new URL(url).origin !== window.location.origin) {
+        img.crossOrigin = '';
+    }
+};
 export async function resizeIfNeededImage(image, maxSize = 512) {
     let ratio = Math.min(maxSize / image.width, maxSize / image.height);
     ratio = ratio >= 1 ? 1 : ratio;
